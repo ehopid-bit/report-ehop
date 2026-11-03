@@ -225,7 +225,12 @@ async function hydrateCovers(rows,serial){
     flip.getSettings().maxHeight=Math.max(210,pageWidth)*ratio;
     flip.update();centerCover();
   }
-  function leaveFullscreen(){shell.classList.remove('is-fullscreen');document.body.classList.remove('reader-fullscreen');fullscreenButton.textContent='Fullscreen';shell.querySelector('.reader-header').append(fullscreenButton);requestAnimationFrame(fitBook);}
+  function leaveFullscreen(){shell.classList.remove('is-fullscreen');document.body.classList.remove('reader-fullscreen');fullscreenButton.textContent='Fullscreen';shell.querySelector('.reader-header').append(fullscreenButton);const u=new URL(location.href);u.searchParams.delete('fullscreen');history.replaceState({},'',u);requestAnimationFrame(fitBook);}
+  function enterFullscreen(){
+    shell.classList.add('is-fullscreen');document.body.classList.add('reader-fullscreen');fullscreenButton.textContent='Keluar fullscreen';
+    shell.querySelector('.reader-toolbar .toolgroup:last-child').prepend(fullscreenButton);
+    requestAnimationFrame(fitBook);
+  }
   const onFullscreen=()=>{if(!document.fullscreenElement)leaveFullscreen();};
   const onEscape=e=>{if(e.key==='Escape'&&!document.fullscreenElement)leaveFullscreen();};
   document.addEventListener('fullscreenchange',onFullscreen);
@@ -233,14 +238,15 @@ async function hydrateCovers(rows,serial){
   window.addEventListener('resize',fitBook);
   document.getElementById('fullscreen').onclick=async()=>{
     if(shell.classList.contains('is-fullscreen')){if(document.fullscreenElement)await document.exitFullscreen();leaveFullscreen();return;}
-    shell.classList.add('is-fullscreen');document.body.classList.add('reader-fullscreen');document.getElementById('fullscreen').textContent='Keluar fullscreen';
-    shell.querySelector('.reader-toolbar .toolgroup:last-child').prepend(fullscreenButton);
+    enterFullscreen();
     try{await shell.requestFullscreen?.();}catch{} requestAnimationFrame(fitBook);
   };
   readerCleanup=()=>{document.removeEventListener('fullscreenchange',onFullscreen);document.removeEventListener('keydown',onEscape);window.removeEventListener('resize',fitBook);document.body.classList.remove('reader-fullscreen');if(document.fullscreenElement===shell)document.exitFullscreen().catch(()=>{});};
   flip.on('changeState',event=>{if(event.data==='flipping')book.style.transform='translateX(0)';else if(event.data==='read')centerCover();});
   flip.on('changeOrientation',()=>{centerCover();void preloadAround(current);});
   fitBook();
+  if(new URLSearchParams(location.search).get('fullscreen')==='1')enterFullscreen();
+  setCurrent(starting);
   document.getElementById('prev').onclick=()=>flip.flipPrev();
   document.getElementById('next').onclick=()=>flip.flipNext();
   document.getElementById('jump').onclick=()=>{
@@ -249,7 +255,10 @@ async function hydrateCovers(rows,serial){
   };
   document.getElementById('page-jump').onkeydown=e=>{if(e.key==='Enter')document.getElementById('jump').click();};
   document.getElementById('share').onclick=async()=>{
-    const link=location.href;
+    const sharedUrl=new URL(location.href);
+    sharedUrl.searchParams.set('halaman',String(current+1));
+    sharedUrl.searchParams.set('fullscreen','1');
+    const link=sharedUrl.href;
     try { if(navigator.share) await navigator.share({title:row.title,url:link}); else {await navigator.clipboard.writeText(link);status.textContent='Tautan halaman berhasil disalin.';} }
     catch(e){if(e.name!=='AbortError') status.textContent='Silakan salin alamat dari browser untuk membagikannya.';}
   };

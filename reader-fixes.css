@@ -1,0 +1,19 @@
+/* Keep the reader background aligned with the title and fullscreen control. */
+.reader-shell{max-width:1224px;padding-inline:22px;margin-inline:auto}
+.reader-shell .reader-header{width:100%;margin-inline:0}
+.reader-shell.is-fullscreen{max-width:none;padding:0}
+.reader-shell.is-fullscreen .reader-toolbar{opacity:1;background:#fffafc}
+.reader-toolbar .btn{color:#fff;-webkit-text-fill-color:#fff}
+.reader-toolbar .btn-soft{color:#74102d;-webkit-text-fill-color:#74102d;background:#fff7f9}
+.reader-toolbar .btn-soft:hover,
+.reader-toolbar .btn-soft:active,
+.reader-toolbar .btn-soft:focus-visible{color:#fff;-webkit-text-fill-color:#fff;background:#74102d;border-color:#74102d}
+.reader-header .btn-soft{color:#74102d;background:#fff7f9}
+.reader-header .btn-soft:hover,
+.reader-header .btn-soft:active{color:#fff;background:#74102d}
+.reader-toolbar input{color:#2a2023;-webkit-text-fill-color:#2a2023;background:#fff}
+@media(max-width:600px){
+  .reader-shell{padding-inline:14px}
+  .reader-shell .reader-header{padding-inline:0}
+  .is-fullscreen .reader-toolbar{bottom:max(12px,env(safe-area-inset-bottom));width:calc(100% - 20px);max-width:560px;justify-content:center}
+}
