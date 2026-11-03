@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#431c26" />
+  <meta name="description" content="Newsletter Yayasan EHOP — cerita pelayanan dan laporan bulanan Yayasan EHOP." />
+  <title>Newsletter Yayasan EHOP</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+  <link rel="stylesheet" href="/styles.css" />
+  <script src="/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <div class="site-wrap">
+    <header class="site-header">
+      <a class="brand" href="/" data-nav="/" aria-label="Beranda Newsletter EHOP">
+        <img class="brand-logo" src="/assets/logo-ehop-hitam.png" alt="Logo EHOP" />
+        <span class="brand-copy"><strong>NEWSLETTER</strong><span>YAYASAN EHOP</span></span>
+      </a>
+      <button class="menu-toggle" id="menu-toggle" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="main-navigation"><span aria-hidden="true">☰</span></button>
+      <nav class="topnav" id="main-navigation" aria-label="Navigasi utama">
+        <a href="https://ehopindonesia.com/">El-Bethel House of Prayer</a>
+        <a href="/#arsip" data-nav="/#arsip">Arsip Newsletter</a>
+        <a class="support-link" href="/admin" data-nav="/admin">Admin</a>
+      </nav>
+    </header>
+    <main id="app"><div class="loading-shell">Memuat Newsletter EHOP...</div></main>
+    <footer class="site-footer"><img class="footer-logo" src="/assets/logo-ehop-putih.png" alt="EHOP" />
+      <span>© <span id="copyright-year">2026</span> Newsletter Yayasan EHOP</span>
+      <span>Bersama melayani. Bersama membawa dampak.</span>
+    </footer>
+  </div>
+  <div id="overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-label="Perbesar halaman PDF">
+    <button class="overlay-close" id="overlay-close" aria-label="Tutup tampilan besar">×</button>
+    <div id="overlay-body" class="overlay-body"></div>
+  </div>
+</body>
+</html>

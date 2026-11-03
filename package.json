@@ -1,0 +1,8 @@
+{
+  "name": "newsletter-yayasan-ehop",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node --check app.js"
+  }
+}
