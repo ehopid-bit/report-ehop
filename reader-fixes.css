@@ -17,3 +17,13 @@
   .reader-shell .reader-header{padding-inline:0}
   .is-fullscreen .reader-toolbar{bottom:max(12px,env(safe-area-inset-bottom));width:calc(100% - 20px);max-width:560px;justify-content:center}
 }
+
+/* Enlarged tilted latest cover; crop the footer before the headline. */
+.hero-inner{position:relative;min-height:530px;grid-template-columns:1.1fr .9fr;padding-block:64px}
+.hero-inner>div:first-child{position:relative;z-index:2}
+.book-art{align-self:stretch;height:auto;min-height:390px;align-items:flex-start;overflow:visible}
+.book-art .hero-cover{flex:none;width:350px;height:490px;transform:rotate(7deg);transform-origin:50% 15%;margin-top:-20px;box-shadow:20px 24px 45px #26000a77,-7px 0 0 #f1d9df}
+.hero-cover img{object-fit:cover;object-position:center top}
+@media(min-width:1000px){.book-art .hero-cover{width:410px;height:580px;margin-top:-22px}.hero-inner{min-height:530px}}
+@media(max-width:800px){.hero-inner{grid-template-columns:1fr;gap:30px;padding-bottom:0}.book-art{height:325px;min-height:0}.book-art .hero-cover{width:300px;height:425px;margin-top:5px;transform:rotate(7deg)}}
+@media(max-width:600px){.hero-inner{padding-top:36px;min-height:auto}.book-art{height:310px}.book-art .hero-cover{width:285px;height:405px;transform:rotate(7deg);margin-top:4px}}

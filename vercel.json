@@ -1,5 +1,28 @@
 {
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+  "functions": {
+    "api/page.js": {
+      "includeFiles": "index.html"
+    }
+  },
+  "routes": [
+    {
+      "src": "/",
+      "dest": "/api/page"
+    },
+    {
+      "src": "/([a-z]+-[0-9]{4})/?",
+      "dest": "/api/page?edition=$1"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/admin/?",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
   ]
 }

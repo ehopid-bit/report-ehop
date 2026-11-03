@@ -119,7 +119,7 @@ async function hydrateCovers(rows,serial){
   if(!row){showError('Edisi newsletter tidak ditemukan atau belum diterbitkan.');return;}
   const url=publicUrl(row.pdf_path);
   app.innerHTML=`<section class="container reader-shell">
-    <div class="reader-header"><h1>${safe(row.theme?.trim() || `Newsletter ${labelDate(row)}`)}</h1></div>
+    <div class="reader-header"><h1>${safe(row.title || `Newsletter EHOP ${labelDate(row)}`)}</h1></div>
     <div class="reader-toolbar"><div class="toolgroup"><button id="prev" class="btn btn-soft btn-sm">← Sebelumnya</button><button id="next" class="btn btn-soft btn-sm">Berikutnya →</button></div><div class="toolgroup"><span class="page-count">Halaman</span><input class="page-jump" id="page-jump" type="number" min="1" value="1" aria-label="Nomor halaman" /><span id="page-total" class="page-count">/ ...</span><button id="jump" class="btn btn-sm">Pergi</button></div><div class="toolgroup"><button id="fullscreen" class="btn btn-soft btn-sm">Fullscreen</button><button id="zoom" class="btn btn-soft btn-sm">Perbesar</button><button id="share" class="btn btn-soft btn-sm">Bagikan</button><a class="btn btn-soft btn-sm" href="${safe(url)}" target="_blank" rel="noopener noreferrer">PDF asli ↗</a></div></div>
     <div id="reader-stage" class="reader-stage"><div class="book-host"><div id="book"></div></div><div id="reader-loading" class="spinner" style="position:absolute"></div></div>
     <div class="status-line" id="reader-status">Menyiapkan halaman buku...</div></section>`;
@@ -307,11 +307,8 @@ async function renderAdminConsole(serial,email) {
   app.innerHTML=`<div class="container admin-layout"><div class="admin-heading"><div><span class="eyebrow">Ruang redaksi</span><h1 class="section-title">Kelola Newsletter</h1><p class="muted" style="font-size:13px">Login sebagai ${safe(email)}</p></div><button class="btn btn-soft btn-sm" id="logout">Keluar</button></div>
   <div class="admin-grid"><section class="panel"><h2 id="form-title">Tambah edisi</h2><form id="edition-form">
     <div class="fields-two"><div class="field"><label for="month">Bulan</label><select id="month" required>${MONTHS.map((m,i)=>`<option value="${i+1}" ${i+1===new Date().getMonth()+1?'selected':''}>${m}</option>`).join('')}</select></div><div class="field"><label for="year">Tahun</label><input id="year" type="number" min="2020" max="2200" value="${new Date().getFullYear()}" required/></div></div>
-    <div class="field"><label for="title">Judul publikasi</label><input id="title" maxlength="160" value="Newsletter Yayasan EHOP" required /></div>
-    <div class="field"><label for="theme">Tema edisi</label><input id="theme" maxlength="160" placeholder="Contoh: Kabar Pelayanan Oktober"/></div>
     <div class="field"><label for="pdf-file">Upload PDF baru (opsional jika sudah ada di Storage)</label><input id="pdf-file" type="file" accept="application/pdf,.pdf"/><span class="help">File di atas 6 MB diunggah secara bertahap agar lebih andal.</span></div>
     <div class="field"><label for="pdf-path">Atau gunakan path PDF yang SUDAH ada di Storage</label><input id="pdf-path" placeholder="2026/11/nama-file.pdf"/><span class="help">Isi path di dalam bucket, bukan URL lengkap. Tidak perlu upload ulang.</span></div>
-    <div class="field"><label for="cover-file">Sampul JPG/PNG/WEBP (opsional)</label><input id="cover-file" type="file" accept="image/jpeg,image/png,image/webp"/><span class="help">Jika upload PDF baru tanpa sampul, sampul otomatis diambil dari halaman pertama PDF.</span></div>
     <div class="checkline"><input id="publish" type="checkbox" checked/><label for="publish">Publikasikan edisi (langsung muncul di beranda)</label></div>
     <div class="button-row"><button id="save" class="btn" type="submit">Simpan edisi</button><button id="reset" class="btn btn-soft" type="button">Batal / Kosongkan</button></div>
   </form><div class="hidden" id="admin-message" style="margin-top:17px" aria-live="polite"></div></section>
@@ -335,7 +332,6 @@ function clearAdminForm(){
   editingId=null;document.getElementById('edition-form').reset();
   document.getElementById('month').value=new Date().getMonth()+1;
   document.getElementById('year').value=new Date().getFullYear();
-  document.getElementById('title').value='Newsletter Yayasan EHOP';
   document.getElementById('publish').checked=true;
   document.getElementById('form-title').textContent='Tambah edisi';
   document.getElementById('save').textContent='Simpan edisi';
@@ -346,11 +342,8 @@ function editEdition(row){
   editingId=row.id;
   document.getElementById('month').value=row.edition_month;
   document.getElementById('year').value=row.edition_year;
-  document.getElementById('title').value=row.title;
-  document.getElementById('theme').value=row.theme || '';
   document.getElementById('pdf-path').value=row.pdf_path;
   document.getElementById('pdf-file').value='';
-  document.getElementById('cover-file').value='';
   document.getElementById('publish').checked=row.is_published;
   document.getElementById('form-title').textContent='Edit edisi '+labelDate(row);
   document.getElementById('save').textContent='Simpan perubahan';
@@ -367,7 +360,7 @@ async function pdfCoverBlob(fileOrUrl){
     const canvas=document.createElement('canvas');canvas.width=Math.round(vp.width);canvas.height=Math.round(vp.height);
     await first.render({canvasContext:canvas.getContext('2d'),viewport:vp}).promise;
     const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.85));
-    if(!blob)throw new Error('Sampul PDF tidak dapat dibuat. Coba pilih sampul JPG, PNG, atau WEBP.');
+    if(!blob)throw new Error('Sampul PDF tidak dapat dibuat. Silakan coba kembali.');
     return {blob,count:pdf.numPages};
   } finally { await task.destroy(); }
 }
@@ -409,9 +402,9 @@ async function saveEdition(e){
   const form=e.currentTarget,serial=routeSerial;
   const month=Number(document.getElementById('month').value),year=Number(document.getElementById('year').value);
   // Capture all input before awaiting; navigation or edits cannot change this save.
-  const title=document.getElementById('title').value.trim(),theme=document.getElementById('theme').value.trim();
+  const title=`Newsletter EHOP ${MONTHS[month-1]} ${year}`;
   const isPublished=document.getElementById('publish').checked;
-  const pdfFile=document.getElementById('pdf-file').files[0],coverFile=document.getElementById('cover-file').files[0];
+  const pdfFile=document.getElementById('pdf-file').files[0];
   const old=editingId?activeAdminRows.find(r=>r.id===editingId):null;
   let pdfPath=document.getElementById('pdf-path').value.trim(),coverPath=old?.cover_path||null,pageCount=old?.page_count||null;
   const newPaths=[];
@@ -427,7 +420,6 @@ async function saveEdition(e){
     if(!pdfFile && !pdfPath)throw new Error('Pilih file PDF atau isi path PDF yang sudah ada di Storage.');
     if(pdfFile && pdfPath && pdfPath!==old?.pdf_path) throw new Error('Dua sumber PDF terisi. Untuk file yang sudah ada di Storage, kosongkan kolom Upload PDF baru. Untuk PDF baru, kosongkan kolom path Storage.');
     if(!pdfFile && (pdfPath.startsWith('/')||/[:\\?#]/.test(pdfPath)||pdfPath.split('/').some(part=>!part||part==='.'||part==='..')))throw new Error('Isi path di dalam bucket, misalnya 2026/11/newsletter.pdf, bukan URL lengkap.');
-    if(coverFile && !['image/jpeg','image/png','image/webp'].includes(coverFile.type))throw new Error('Sampul harus JPG, PNG, atau WEBP.');
     const folder=`${year}/${String(month).padStart(2,'0')}`;
     // Verify the PDF before uploading anything, including a selected cover.
     setMessage(pdfFile?'Membaca PDF dan menyiapkan sampul...':'Memeriksa PDF yang sudah ada di Storage...');
@@ -435,18 +427,18 @@ async function saveEdition(e){
     try { inspected=await pdfCoverBlob(pdfFile||publicUrl(pdfPath)); }
     catch(err){ throw new Error(pdfFile?'PDF tidak dapat dibaca. Pastikan file PDF valid dan tidak dilindungi password.':'PDF pada path Storage tidak dapat dibaca. Periksa nama path dan Public URL.'); }
     pageCount=inspected.count;
-    const automaticCover=!coverFile&&(pdfFile||pdfPath!==old?.pdf_path||!coverPath)?inspected.blob:null;
+    const automaticCover=inspected.blob;
     if(pdfFile){
       pdfPath=`${folder}/${crypto.randomUUID()}.pdf`;
       setMessage('Mengunggah PDF...');await uploadAsset(pdfPath,pdfFile,'application/pdf');newPaths.push(pdfPath);
     }
-    if(coverFile||automaticCover){
-      const ext=coverFile?.type==='image/png'?'png':coverFile?.type==='image/webp'?'webp':'jpg';
-      const file=coverFile||automaticCover;
+    if(automaticCover){
+      const ext='jpg';
+      const file=automaticCover;
       coverPath=`${folder}/cover-${crypto.randomUUID()}.${ext}`;
-      setMessage('Mengunggah sampul...');await uploadAsset(coverPath,file,coverFile?.type||'image/jpeg');newPaths.push(coverPath);
+      setMessage('Mengunggah sampul...');await uploadAsset(coverPath,file,'image/jpeg');newPaths.push(coverPath);
     }
-    const payload={slug:slugFor(year,month),title,theme,edition_year:year,edition_month:month,pdf_path:pdfPath,cover_path:coverPath,page_count:pageCount,is_published:isPublished};
+    const payload={slug:slugFor(year,month),title,theme:old?.theme || '',edition_year:year,edition_month:month,pdf_path:pdfPath,cover_path:coverPath,page_count:pageCount,is_published:isPublished};
     if(payload.is_published && !old?.published_at) payload.published_at=new Date().toISOString();
     if(!payload.is_published) payload.published_at=null;
     setMessage('Menyimpan informasi edisi...');
