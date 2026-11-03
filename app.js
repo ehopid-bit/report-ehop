@@ -96,7 +96,7 @@ async function renderHome(serial) {
       <div class="book-art" aria-hidden="true"><div class="hero-cover" data-pdf-cover="${safe(latest?.slug || '')}">${latest?.cover_path ? `<img src="${safe(publicUrl(latest.cover_path))}" alt=""/>` : `<small>Newsletter Yayasan EHOP</small><b>${safe(latest?.theme || 'CERITA PELAYANAN')}</b><small>${safe(latest ? labelDate(latest):'Laporan Bulanan')}</small>`}</div></div>
     </div></section>
     <section id="arsip" class="container section"><div class="section-top"><div><span class="eyebrow">Perpustakaan digital</span><h2 class="section-title">Edisi Newsletter</h2></div><p class="section-desc">Pilih bulan untuk mulai membaca</p></div>
-    ${rows?.length ? `<div class="edition-grid">${rows.map(row=>`<article class="edition-card"><div class="cover-wrap" data-pdf-cover="${safe(row.slug)}">${cover(row)}</div><div class="card-info"><span class="pill">${safe(labelDate(row))}</span><h3>${safe(row.title)}</h3><p>${safe(row.theme || 'Newsletter Yayasan EHOP')}</p><a class="btn" href="/${safe(row.slug)}" data-nav="/${safe(row.slug)}">Buka Flipbook →</a></div></article>`).join('')}</div>` : `<div class="empty">Belum ada edisi yang diterbitkan. Masuk ke <a href="/admin" data-nav="/admin"><u>halaman admin</u></a> untuk menambahkan edisi pertama.</div>`}
+    ${rows?.length ? `<div class="edition-grid">${rows.map(row=>`<article class="edition-card"><a class="cover-wrap" href="/${safe(row.slug)}" data-nav="/${safe(row.slug)}" aria-label="Baca ${safe(row.title)}" data-pdf-cover="${safe(row.slug)}">${cover(row)}</a><div class="card-info"><span class="pill">${safe(labelDate(row))}</span><h3>${safe(row.title)}</h3><p>${safe(row.theme || 'Newsletter Yayasan EHOP')}</p><a class="btn" href="/${safe(row.slug)}" data-nav="/${safe(row.slug)}">Buka Flipbook →</a></div></article>`).join('')}</div>` : `<div class="empty">Belum ada edisi yang diterbitkan. Masuk ke <a href="/admin" data-nav="/admin"><u>halaman admin</u></a> untuk menambahkan edisi pertama.</div>`}
     </section>`;
   void hydrateCovers(rows || [],serial);
   if(location.hash === '#arsip') document.getElementById('arsip')?.scrollIntoView();
@@ -262,15 +262,40 @@ async function hydrateCovers(rows,serial){
     try { if(navigator.share) await navigator.share({title:row.title,url:link}); else {await navigator.clipboard.writeText(link);status.textContent='Tautan halaman berhasil disalin.';} }
     catch(e){if(e.name!=='AbortError') status.textContent='Silakan salin alamat dari browser untuk membagikannya.';}
   };
-  document.getElementById('zoom').onclick=async()=>{
-    overlay.classList.remove('hidden');document.getElementById('overlay-body').innerHTML='<div class="spinner" style="margin:10vh auto"></div>';
-    const page=await pdf.getPage(activeReaderPage+1);
-    const original=page.getViewport({scale:1});const vp=page.getViewport({scale:1400/original.width});
-    const canvas=document.createElement('canvas');canvas.width=Math.ceil(vp.width);canvas.height=Math.ceil(vp.height);
-    await page.render({canvasContext:canvas.getContext('2d'),viewport:vp}).promise;
-    if(!overlay.classList.contains('hidden')) document.getElementById('overlay-body').innerHTML=`<img alt="Halaman ${activeReaderPage+1}" src="${canvas.toDataURL('image/jpeg',.94)}"/>`;
-    page.cleanup();
+  let zoomIndex=starting,zoomSerial=0;
+  async function showZoom(index){
+    zoomIndex=Math.min(pdf.numPages-1,Math.max(0,index));
+    const ticket=++zoomSerial,target=zoomIndex;
+    overlay.classList.remove('hidden');
+    const body=document.getElementById('overlay-body');
+    body.innerHTML='<div class="spinner" style="margin:10vh auto"></div>';
+    document.getElementById('zoom-prev').disabled=target===0;
+    document.getElementById('zoom-next').disabled=target===pdf.numPages-1;
+    document.getElementById('zoom-count').textContent='Halaman '+(target+1)+' / '+pdf.numPages;
+    overlay.scrollTop=0;
+    let page;
+    try{
+      page=await pdf.getPage(target+1);
+      const original=page.getViewport({scale:1}),vp=page.getViewport({scale:1400/original.width});
+      const canvas=document.createElement('canvas');canvas.width=Math.ceil(vp.width);canvas.height=Math.ceil(vp.height);
+      await page.render({canvasContext:canvas.getContext('2d'),viewport:vp}).promise;
+      if(ticket!==zoomSerial||serial!==routeSerial||overlay.classList.contains('hidden'))return;
+      const img=document.createElement('img');img.alt='Halaman '+(target+1);img.src=canvas.toDataURL('image/jpeg',.94);body.replaceChildren(img);
+      flip.turnToPage(target);setCurrent(target);
+    }catch(error){if(ticket===zoomSerial&&!overlay.classList.contains('hidden'))body.textContent='Halaman gagal dimuat. Gunakan panah untuk mencoba kembali.';}
+    finally{page?.cleanup();}
+  }
+  document.getElementById('zoom').onclick=()=>showZoom(activeReaderPage);
+  document.getElementById('zoom-prev').onclick=()=>showZoom(zoomIndex-1);
+  document.getElementById('zoom-next').onclick=()=>showZoom(zoomIndex+1);
+  const onZoomKey=e=>{
+    if(overlay.classList.contains('hidden'))return;
+    if(e.key==='ArrowLeft'){e.preventDefault();void showZoom(zoomIndex-1);}
+    if(e.key==='ArrowRight'){e.preventDefault();void showZoom(zoomIndex+1);}
   };
+  document.addEventListener('keydown',onZoomKey);
+  const previousCleanup=readerCleanup;
+  readerCleanup=()=>{++zoomSerial;document.removeEventListener('keydown',onZoomKey);previousCleanup?.();};
   await preloadAround(starting);
 }
 

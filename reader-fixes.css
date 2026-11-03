@@ -27,3 +27,15 @@
 @media(min-width:1000px){.book-art .hero-cover{width:410px;height:580px;margin-top:-22px}.hero-inner{min-height:530px}}
 @media(max-width:800px){.hero-inner{grid-template-columns:1fr;gap:30px;padding-bottom:0}.book-art{height:325px;min-height:0}.book-art .hero-cover{width:300px;height:425px;margin-top:5px;transform:rotate(7deg)}}
 @media(max-width:600px){.hero-inner{padding-top:36px;min-height:auto}.book-art{height:310px}.book-art .hero-cover{width:285px;height:405px;transform:rotate(7deg);margin-top:4px}}
+
+/* Balanced archive and page-by-page zoom navigation. */
+.edition-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:22px}
+a.cover-wrap{display:block;cursor:pointer}
+a.cover-wrap:focus-visible{outline:3px solid #941535;outline-offset:-4px}
+.zoom-arrow{position:fixed;top:50%;transform:translateY(-50%);z-index:1002;width:48px;height:56px;border:1px solid #ffffff66;border-radius:12px;background:#fff;color:#74102d;font-size:28px;box-shadow:0 4px 24px #0004}
+.zoom-prev{left:14px}.zoom-next{right:14px}
+.zoom-arrow:hover{background:#fbe7ed}.zoom-arrow:disabled{opacity:.35;cursor:default}
+.zoom-count{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:1002;background:#fff;color:#74102d;padding:10px 16px;border-radius:24px;font-size:13px;font-weight:700}
+.overlay{padding-inline:76px}
+@media(min-width:601px) and (max-width:900px){.edition-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:600px){.edition-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.card-info{padding:8px 5px}.card-info h3{font-size:11px}.card-info .btn{font-size:10px;padding:8px 3px}.overlay{padding-inline:6px;padding-bottom:82px}.zoom-arrow{top:auto;bottom:16px;transform:none;width:46px;height:46px;font-size:23px}.zoom-prev{left:16px}.zoom-next{right:16px}.zoom-count{top:auto;bottom:20px;white-space:nowrap}}
