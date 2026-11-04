@@ -39,3 +39,20 @@ a.cover-wrap:focus-visible{outline:3px solid #941535;outline-offset:-4px}
 .overlay{padding-inline:76px}
 @media(min-width:601px) and (max-width:900px){.edition-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:600px){.edition-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.card-info{padding:8px 5px}.card-info h3{font-size:11px}.card-info .btn{font-size:10px;padding:8px 3px}.overlay{padding-inline:6px;padding-bottom:82px}.zoom-arrow{top:auto;bottom:16px;transform:none;width:46px;height:46px;font-size:23px}.zoom-prev{left:16px}.zoom-next{right:16px}.zoom-count{top:auto;bottom:20px;white-space:nowrap}}
+
+/* Compact mobile controls below the book, translucent desktop controls. */
+.tool-icon{display:none}
+@media(min-width:601px){.reader-shell.is-fullscreen .reader-toolbar{opacity:.2}.reader-shell.is-fullscreen .reader-toolbar:hover,.reader-shell.is-fullscreen .reader-toolbar:focus-within{opacity:1}}
+@media(max-width:600px){
+ .reader-toolbar,.reader-shell.is-fullscreen .reader-toolbar{display:flex;flex-wrap:nowrap;gap:4px;justify-content:center;width:100%;max-width:none;position:static;transform:none;left:auto;bottom:auto;margin:8px 0 0;padding:6px 2px;opacity:1;border-radius:0;flex-shrink:0}
+ .reader-toolbar .toolgroup{display:contents}
+ .reader-toolbar .tool-label,.reader-toolbar .page-word{display:none}
+ .reader-toolbar .tool-icon{display:inline-flex;align-items:center;justify-content:center}
+ .reader-toolbar .btn{padding:0 5px;height:36px;min-width:29px;gap:0;font-size:10px;white-space:nowrap;border-radius:7px;flex-shrink:0}
+ .reader-toolbar .page-jump{width:34px;min-width:0;height:36px;padding:2px;font-size:12px;appearance:textfield;-moz-appearance:textfield}
+ .reader-toolbar .page-jump::-webkit-inner-spin-button,.reader-toolbar .page-jump::-webkit-outer-spin-button{appearance:none;margin:0}
+ .reader-toolbar .page-count{font-size:10px;white-space:nowrap;flex-shrink:0}
+ .reader-shell.is-fullscreen{display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom)}
+ .reader-shell.is-fullscreen .reader-stage{height:auto;min-height:0;flex:1 1 0}
+ .reader-shell.is-fullscreen .reader-toolbar{margin:0;background:#fffafc}
+}

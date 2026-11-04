@@ -19,10 +19,10 @@ export async function GET(request){
     if(!response.ok)throw new Error('Catalog HTTP '+response.status);
     [row]=await response.json();
   }catch(error){failed=true;console.error('Newsletter metadata unavailable',error.message);}
-  const title=row?.title||'Newsletter Yayasan EHOP';
-  const description=row?.theme||'Cerita pelayanan, kegiatan, dan laporan bulanan Yayasan EHOP.';
+  const title=requested?(row?.title||'Newsletter Yayasan EHOP'):'NEWSLETTER YAYASAN EHOP';
+  const description=requested?(row?.theme||'Laporan Bulanan Yayasan EHOP Indonesia'):'Laporan Bulanan Yayasan EHOP Indonesia';
   const canonical=SITE+(requested?'/'+requested:'/');
-  const image=row?.cover_path?SUPABASE+'/storage/v1/object/public/report-publik/'+row.cover_path.split('/').map(encodeURIComponent).join('/') : SITE+'/assets/logo-ehop-hitam.png';
+  const image=!requested?SITE+'/assets/home-preview.png':row?.cover_path?SUPABASE+'/storage/v1/object/public/report-publik/'+row.cover_path.split('/').map(encodeURIComponent).join('/') : SITE+'/assets/logo-ehop-hitam.png';
   const tags=`<meta property="og:type" content="website" />
 <meta property="og:site_name" content="Newsletter Yayasan EHOP" />
 <meta property="og:title" content="${escapeHtml(title)}" />
@@ -35,6 +35,6 @@ export async function GET(request){
 <meta name="twitter:image" content="${escapeHtml(image)}" />
 <link rel="canonical" href="${escapeHtml(canonical)}" />`;
   let html=await readFile(join(process.cwd(),'index.html'),'utf8');
-  html=html.replace(/<title>.*?<\/title>/,`<title>${escapeHtml(title)}</title>`).replace('</head>',tags+'\n</head>');
+  html=html.replace(/<title>.*?<\/title>/,`<title>${escapeHtml(title)}</title>`).replace(/<meta name="description"[^>]*>/,`<meta name="description" content="${escapeHtml(description)}" />`).replace('</head>',tags+'\n</head>');
   return new Response(html,{headers:{'content-type':'text/html; charset=utf-8','cache-control':failed?'no-store':'public, max-age=0, s-maxage=60'}});
 }
